@@ -205,6 +205,10 @@ class UpworkClient {
                 totalHires
                 totalPostedJobs
                 totalReviews
+                totalCharges {
+                  rawValue
+                }
+                paymentVerificationStatus
                 location {
                   country
                 }
@@ -268,12 +272,21 @@ class UpworkClient {
       // Show new jobs only
       if (processedData.newJobs === 0) {
         console.log(`📊 SEARCH RESULTS - No new jobs found`);
+        if (processedData.oldJobsFiltered > 0) {
+          console.log(`   ⏱️  ${processedData.oldJobsFiltered} older jobs filtered (not recently posted)`);
+        }
         console.log(`   ${processedData.alreadySeen} jobs already seen (filtered out)`);
       } else if (processedData.newJobs === 1) {
         console.log(`📊 SEARCH RESULTS - 1 NEW job found! 🎉`);
+        if (processedData.oldJobsFiltered > 0) {
+          console.log(`   ⏱️  ${processedData.oldJobsFiltered} older jobs filtered (not recently posted)`);
+        }
         console.log(`   ${processedData.alreadySeen} jobs already seen (filtered out)`);
       } else {
         console.log(`📊 SEARCH RESULTS - ${processedData.newJobs} NEW jobs found! 🎉`);
+        if (processedData.oldJobsFiltered > 0) {
+          console.log(`   ⏱️  ${processedData.oldJobsFiltered} older jobs filtered (not recently posted)`);
+        }
         console.log(`   ${processedData.alreadySeen} jobs already seen (filtered out)`);
       }
     } else {

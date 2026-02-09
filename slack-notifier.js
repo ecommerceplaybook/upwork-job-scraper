@@ -18,15 +18,33 @@ class SlackNotifier {
    */
   formatJob(job) {
     const title = job.title || 'Untitled Job';
-    const url = job.url || `https://www.upwork.com/jobs/~${job.id}`;
+    // Use job.url if provided, otherwise construct from ciphertext or id
+    let url = job.url;
+    if (!url) {
+      if (job.ciphertext) {
+        url = `https://www.upwork.com/jobs/${job.ciphertext}`;
+      } else if (job.id) {
+        url = `https://www.upwork.com/jobs/~0${job.id}`;
+      } else {
+        url = 'https://www.upwork.com/jobs/';
+      }
+    }
     const postedDate = job.createdDateTime 
-      ? new Date(job.createdDateTime).toLocaleString() 
+      ? new Date(job.createdDateTime).toLocaleString('en-US', { 
+          timeZone: 'America/New_York',
+          month: 'numeric',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        })
       : 'Unknown';
     
     // Format budget/rate
     let budget = '💰 Not specified';
-    if (job.hourlyBudgetMin && job.hourlyBudgetMax) {
-      budget = `💰 $${job.hourlyBudgetMin} - $${job.hourlyBudgetMax}/hr`;
+    if (job.hourlyBudgetMin?.rawValue && job.hourlyBudgetMax?.rawValue) {
+      budget = `💰 $${job.hourlyBudgetMin.rawValue} - $${job.hourlyBudgetMax.rawValue}/hr`;
     } else if (job.amount?.rawValue) {
       budget = `💰 $${job.amount.rawValue} (Fixed Price)`;
     } else if (job.weeklyBudget?.rawValue) {
@@ -72,29 +90,62 @@ class SlackNotifier {
   createJobBlocks(job) {
     const formatted = this.formatJob(job);
     
-    const blocks = [
-      {
-        type: "header",
-        text: {
-          type: "plain_text",
-          text: formatted.title,
-          emoji: true
-        }
-      },
-      {
-        type: "section",
-        fields: [
-          {
+    const blocks = [];
+    
+    // Add tier badge if AI qualification is present
+    if (job.tier && job.reasoning) {
+      const tierConfig = {
+        1: { emoji: '🎯', label: 'TIER 1 - IDEAL MATCH', color: '#2eb886' },
+        2: { emoji: '💡', label: 'TIER 2 - UPSELL POTENTIAL', color: '#daa038' }
+      };
+      
+      const config = tierConfig[job.tier];
+      if (config) {
+        blocks.push({
+          type: "section",
+          text: {
             type: "mrkdwn",
-            text: `*Posted:*\n${formatted.postedDate}`
-          },
-          {
-            type: "mrkdwn",
-            text: formatted.budget
+            text: `${config.emoji} *${config.label}*`
           }
-        ]
+        });
       }
-    ];
+    }
+    
+    // Add job title
+    blocks.push({
+      type: "header",
+      text: {
+        type: "plain_text",
+        text: formatted.title,
+        emoji: true
+      }
+    });
+    
+    // Add AI reasoning if available
+    if (job.reasoning) {
+      blocks.push({
+        type: "section",
+        text: {
+          type: "mrkdwn",
+          text: `💭 *AI Insight:* _${job.reasoning}_`
+        }
+      });
+    }
+    
+    // Add posted date and budget
+    blocks.push({
+      type: "section",
+      fields: [
+        {
+          type: "mrkdwn",
+          text: `*Posted:*\n${formatted.postedDate}`
+        },
+        {
+          type: "mrkdwn",
+          text: formatted.budget
+        }
+      ]
+    });
     
     // Add duration and client info if available
     if (formatted.duration || formatted.clientInfo) {
@@ -145,10 +196,23 @@ class SlackNotifier {
       ]
     });
     
-    // Add divider
+    // Add divider (extra spacing after qualified jobs)
     blocks.push({
       type: "divider"
     });
+    
+    // Add extra space for tier badges
+    if (job.tier) {
+      blocks.push({
+        type: "context",
+        elements: [
+          {
+            type: "mrkdwn",
+            text: " "
+          }
+        ]
+      });
+    }
     
     return blocks;
   }

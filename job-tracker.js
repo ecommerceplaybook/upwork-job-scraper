@@ -101,14 +101,30 @@ class JobTracker {
   }
 
   /**
+   * Filter jobs posted within the last X minutes (for recent jobs only)
+   */
+  filterRecentJobs(jobs, minutesBack = 15) {
+    const now = new Date();
+    const cutoffTime = new Date(now.getTime() - minutesBack * 60 * 1000);
+    
+    return jobs.filter(job => {
+      const postedDate = new Date(job.node.createdDateTime);
+      return postedDate >= cutoffTime;
+    });
+  }
+
+  /**
    * Process jobs: filter, mark as seen, and return stats
    */
   processJobs(jobs) {
     // First clean up old jobs (removes jobs older than 48 hours from tracking)
     this.cleanupOldJobs();
 
+    // Filter to only jobs posted in the last 15 minutes (3x the cron interval for buffer)
+    const recentJobs = this.filterRecentJobs(jobs, 15);
+
     // Filter to only NEW jobs we haven't seen before
-    const newJobs = this.filterNewJobs(jobs);
+    const newJobs = this.filterNewJobs(recentJobs);
 
     // Mark all new jobs as seen
     newJobs.forEach(job => {
@@ -120,8 +136,10 @@ class JobTracker {
 
     return {
       totalJobs: jobs.length,
+      recentJobs: recentJobs.length,
       newJobs: newJobs.length,
-      alreadySeen: jobs.length - newJobs.length,
+      alreadySeen: recentJobs.length - newJobs.length,
+      oldJobsFiltered: jobs.length - recentJobs.length,
       jobs: newJobs
     };
   }

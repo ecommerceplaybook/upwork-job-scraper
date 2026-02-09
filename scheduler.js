@@ -2,6 +2,7 @@ require('dotenv').config();
 const cron = require('node-cron');
 const UpworkClient = require('./upwork-client');
 const SlackNotifier = require('./slack-notifier');
+const OpenAIQualifier = require('./openai-qualifier');
 
 // Get configuration from environment
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE || '0 */6 * * *'; // Default: every 6 hours
@@ -50,19 +51,62 @@ async function executeJobSearch() {
     const client = new UpworkClient();
     const results = await client.run(SEARCH_KEYWORD);
     
-    // Send Slack notification for new jobs
+    // Qualify and send Slack notification for new jobs
     if (results.processed && results.processed.newJobs > 0 && results.edges.length > 0) {
       // Extract job nodes and add URL to each job
       const jobsForSlack = results.edges.map(edge => {
         const job = edge.node;
         // Add properly formatted URL
+        // ciphertext already includes ~02 prefix, just use it directly
         const jobUrl = job.ciphertext 
           ? `https://www.upwork.com/jobs/${job.ciphertext}`
-          : `https://www.upwork.com/jobs/~${job.id}`;
+          : `https://www.upwork.com/jobs/~0${job.id}`;
         return { ...job, url: jobUrl };
       });
       
-      await slackNotifier.notifyNewJobs(jobsForSlack);
+      // Sort by oldest first (ascending by date) for chronological order
+      jobsForSlack.sort((a, b) => {
+        const dateA = new Date(a.createdDateTime);
+        const dateB = new Date(b.createdDateTime);
+        return dateA - dateB; // Ascending (oldest first)
+      });
+      
+      // Qualify jobs with OpenAI
+      const qualifier = new OpenAIQualifier(process.env.OPENAI_API_KEY);
+      const qualificationResults = await qualifier.qualifyJobs(jobsForSlack);
+      
+      // Log qualification results
+      console.log(`\n📊 Qualification Results:`);
+      console.log(`   ✅ ${qualificationResults.qualified.length} jobs qualified (will notify)`);
+      console.log(`   ❌ ${qualificationResults.rejected.length} jobs filtered out`);
+      
+      // Log rejected jobs with reasoning
+      if (qualificationResults.rejected.length > 0) {
+        console.log(`\n🚫 Rejected Jobs:`);
+        qualificationResults.rejected.forEach((job, index) => {
+          console.log(`   ${index + 1}. "${job.title}"`);
+          console.log(`      Tier: ${job.tier} - ${job.reasoning}`);
+          if (job.amount?.rawValue) {
+            console.log(`      Budget: $${job.amount.rawValue} (Fixed)`);
+          } else if (job.hourlyBudgetMin?.rawValue) {
+            console.log(`      Budget: $${job.hourlyBudgetMin.rawValue}-${job.hourlyBudgetMax?.rawValue || '?'}/hr`);
+          }
+          if (job.client) {
+            const spendPerHire = job.client.totalCharges?.rawValue && job.client.totalHires > 0
+              ? `$${Math.round(job.client.totalCharges.rawValue / job.client.totalHires)}/hire`
+              : 'unknown';
+            console.log(`      Client: ${job.client.totalHires || 0} hires, ${spendPerHire}`);
+          }
+          console.log('');
+        });
+      }
+      
+      // Send only qualified jobs to Slack
+      if (qualificationResults.qualified.length > 0) {
+        await slackNotifier.notifyNewJobs(qualificationResults.qualified);
+      } else {
+        console.log('📭 No qualified jobs to send to Slack');
+      }
     }
     
     console.log(`✅ Job search completed successfully at ${new Date().toLocaleString()}`);

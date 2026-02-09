@@ -7,7 +7,8 @@
     "start": "node scheduler.js",
     "auth": "node auth.js",
     "test": "node upwork-client.js",
-    "test-slack": "node test-slack.js"
+    "test-slack": "node test-slack.js",
+    "test-openai": "node test-openai-qualifier.js"
   },
   "keywords": ["upwork", "api", "jobs", "scraper", "shopify"],
   "author": "",
@@ -15,6 +16,7 @@
   "dependencies": {
     "axios": "^1.6.5",
     "dotenv": "^16.4.1",
-    "node-cron": "^3.0.3"
+    "node-cron": "^3.0.3",
+    "openai": "^4.77.0"
   }
 }

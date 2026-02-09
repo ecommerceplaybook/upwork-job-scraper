@@ -103,6 +103,7 @@ The scheduler will:
 | `SEARCH_KEYWORDS` | Comma-separated keywords to search | `Shopify` |
 | `FILTER_COUNTRIES` | Comma-separated country filters | `United States,USA,Canada,CAN` |
 | `SLACK_WEBHOOK_URL` | Slack webhook URL for notifications | (optional) |
+| `OPENAI_API_KEY` | OpenAI API key for AI job qualification | (optional) |
 
 ### Cron Schedule Examples
 
@@ -158,6 +159,98 @@ When Slack notifications are enabled, you'll receive:
 
 **Note:** Slack will only send notifications for **new jobs** that haven't been seen before, preventing duplicate notifications.
 
+### AI Job Qualification (Optional)
+
+Automatically filter out low-quality jobs using OpenAI GPT-4o-mini before they reach Slack. This feature intelligently vets each job posting using a 3-tier qualification system.
+
+#### How It Works
+
+The AI analyzes each job based on:
+- Job title and description
+- Budget and rate information
+- Client history (total hires, spend, reviews)
+- Spend-per-hire ratio to identify low-value clients
+- Relevance to your target client profile (Shopify CRO/Meta ads)
+
+#### Three-Tier Qualification System
+
+**TIER 1 - Ideal Match** (Always Accepted)
+- Shopify brands doing $100k+/month or similar high revenue
+- Meta/Facebook ads scaling challenges, CPA/CAC optimization
+- CRO, conversion optimization, PDP redesign, A/B testing
+- Budget: $50+/hr or $500+ fixed price
+- **Example:** "Shopify CRO Expert - Scaling Meta Ads from $10k to $50k/day"
+
+**TIER 2 - Upsell Potential** (Accepted)
+- Quick fixes on Shopify stores (can lead to larger projects)
+- Klaviyo email marketing (adjacent to CRO work)
+- Smaller CRO projects ($30-50/hr or $200-500 fixed)
+- Established brands needing help (even if smaller scope)
+- **Example:** "Klaviyo Expert for Email Flow Setup - Shopify Store"
+
+**TIER 3 - Hard Reject** (Filtered Out)
+- Low-value clients with poor spend-to-hire ratios (e.g., 300+ hires but only $3k spent)
+- Extremely low budgets ($5-20 fixed price)
+- Wrong platforms (WordPress, Wix, etc.)
+- Dropshipping without traction, brand new stores, generic VA work
+- **Example:** "$5 Shopify banner design" from client with 332 hires and $3.3k total spent
+
+#### Setup Instructions
+
+1. **Get an OpenAI API key:**
+   - Visit [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+   - Create a new API key
+   - Copy the key (starts with `sk-proj-...`)
+
+2. **Add to your `.env` file:**
+   ```env
+   OPENAI_API_KEY=sk-proj-your-key-here
+   ```
+
+3. **Restart the scheduler:**
+   ```bash
+   npm start
+   ```
+
+#### Testing the Qualifier
+
+Test the AI qualification with sample jobs:
+
+```bash
+npm run test-openai
+```
+
+This runs 7 sample jobs through the qualifier (2 Tier 1, 2 Tier 2, 3 Tier 3) and shows how they're classified.
+
+#### Cost Information
+
+- **Model:** GPT-4o-mini (cost-effective)
+- **Per-job cost:** ~$0.001 (one-tenth of a cent)
+- **Monthly estimate:**
+  - 10 jobs/run × 4 runs/day = 40 jobs/day
+  - Cost: $0.04/day = **~$1.20/month**
+- **Worst case:** 50 jobs/run × 6 runs/day = **~$9/month**
+
+Much cheaper than manually reviewing irrelevant jobs!
+
+#### What Happens
+
+**With OpenAI enabled:**
+- New jobs are analyzed by AI before Slack notification
+- Tier 1 & 2 jobs → Sent to Slack ✅
+- Tier 3 jobs → Logged to console only (not sent to Slack) 🚫
+- Console shows qualification stats and reasoning
+
+**Without OpenAI (key not provided):**
+- All jobs sent to Slack as before
+- No filtering or additional costs
+- Warning message shown in console
+
+**If OpenAI fails (API error, timeout):**
+- Job is allowed through (fail-open behavior)
+- Warning logged to console
+- Ensures you never miss important opportunities
+
 ## Usage
 
 ### Running the Scheduler
@@ -175,6 +268,16 @@ npm test
 # or
 node upwork-client.js
 ```
+
+### Testing AI Qualification
+
+Test the OpenAI job qualifier with sample jobs:
+
+```bash
+npm run test-openai
+```
+
+This will run 7 sample jobs through the AI (representing all 3 tiers) and show you how they're classified.
 
 ### Re-authenticating
 
@@ -214,13 +317,18 @@ The console will display:
 
 ```
 upwork-api/
-├── auth.js              # OAuth2 authentication script
-├── upwork-client.js     # Upwork API client with GraphQL queries
-├── scheduler.js         # Main scheduler with cron jobs
-├── package.json         # Project dependencies
-├── .env                 # Environment variables (not in git)
-├── .gitignore          # Git ignore file
-└── README.md           # This file
+├── auth.js                     # OAuth2 authentication script
+├── upwork-client.js            # Upwork API client with GraphQL queries
+├── scheduler.js                # Main scheduler with cron jobs
+├── openai-qualifier.js         # AI job qualification module
+├── slack-notifier.js           # Slack notification handler
+├── job-tracker.js              # Tracks seen jobs to prevent duplicates
+├── test-openai-qualifier.js    # Test script for AI qualification
+├── test-slack.js               # Test script for Slack integration
+├── package.json                # Project dependencies
+├── .env                        # Environment variables (not in git)
+├── .gitignore                  # Git ignore file
+└── README.md                   # This file
 ```
 
 ## How It Works
