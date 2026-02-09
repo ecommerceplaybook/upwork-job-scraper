@@ -1,0 +1,72 @@
+---
+description: Git workflow and deployment practices - always ask before pushing to GitHub
+alwaysApply: true
+---
+
+# Git Workflow and Deployment Rules
+
+## Never Push Without Permission
+
+**ALWAYS ask the user before pushing to GitHub or deploying to the server.**
+
+### Before Pushing to GitHub:
+
+1. ✅ Ask: "Should I push these changes to GitHub?"
+2. ✅ Ensure code has been tested locally first
+3. ✅ Verify functionality is complete, not partially implemented
+4. ❌ Never push untested or incomplete features
+
+### Example Flow:
+
+```
+✅ GOOD:
+"I've created the Slack notification feature. Would you like to test it locally first with `npm run test-slack` before I push to GitHub?"
+
+❌ BAD:
+[Automatically pushing to GitHub without asking]
+```
+
+## Testing Before Deployment
+
+Always encourage local testing before deployment:
+
+1. **New features**: Test locally first
+2. **Bug fixes**: Verify the fix works
+3. **Configuration changes**: Test with actual config values
+
+### Testing Commands Available:
+
+- `npm test` - Test Upwork API connection
+- `npm run test-slack` - Test Slack integration
+- `npm start` - Run scheduler locally
+
+## Deployment to DigitalOcean
+
+Only deploy to the server after:
+
+1. Code is tested locally
+2. User confirms they want to deploy
+3. Changes are pushed to GitHub first
+
+### Deployment Steps (only after permission):
+
+```bash
+# 1. Pull latest code
+ssh root@104.131.166.84 "cd ~/upwork-job-scraper && git pull"
+
+# 2. Update dependencies if needed
+ssh root@104.131.166.84 "cd ~/upwork-job-scraper && npm install"
+
+# 3. Update .env if needed (ask user first)
+# 4. Restart with PM2
+ssh root@104.131.166.84 "pm2 restart upwork-scraper"
+```
+
+## Summary
+
+- 🚫 **Never auto-push** - Always ask first
+- 🧪 **Test locally** - Before pushing or deploying
+- 💬 **Communicate** - Explain what will be pushed and why
+- ⏸️ **Wait for approval** - Let user decide when to deploy
+
+The user wants control over when code goes to GitHub and production.

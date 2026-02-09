@@ -185,20 +185,20 @@ class SlackNotifier {
         }
       ];
       
-      // Add each job (limit to 10 jobs per message due to Slack's block limit)
-      const jobsToSend = jobs.slice(0, 10);
+      // Add each job (limit to 5 jobs per message due to Slack's 50 block limit)
+      const jobsToSend = jobs.slice(0, 5);
       for (const job of jobsToSend) {
         blocks.push(...this.createJobBlocks(job));
       }
       
-      // If there are more than 10 jobs, add a note
-      if (jobs.length > 10) {
+      // If there are more than 5 jobs, add a note
+      if (jobs.length > 5) {
         blocks.push({
           type: "context",
           elements: [
             {
               type: "mrkdwn",
-              text: `_... and ${jobs.length - 10} more jobs. Check your server logs for details._`
+              text: `_... and ${jobs.length - 5} more jobs. Check your server logs for details._`
             }
           ]
         });
