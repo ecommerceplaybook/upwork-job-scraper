@@ -27,17 +27,23 @@ class OpenAIQualifier {
 I help Shopify brands doing $100k+/month on Meta ads align their marketing message and customer journey — starting with the PDP — so they can scale ad spend without destroying efficiency.
 
 Target clients:
-- Shopify brands doing $100k+/month
+- Shopify brands doing $100k+/month (ideal)
+- Any Shopify development, migration, or design work (good fit)
 - Scaling Meta/Facebook ads with increasing CPAs/CACs
 - Need conversion optimization, PDP redesign, A/B testing
 - Want to optimize before increasing ad spend
 - Established brands with traction
 
+Core services offered:
+- Shopify CRO and conversion optimization
+- Shopify development (themes, apps, customizations)
+- Shopify migrations (platform migrations, redesigns)
+- Shopify design (UI/UX, theme design, store design)
+
 NOT a fit:
-- Brand-new stores
+- Brand-new stores without revenue
 - Dropshipping without traction
-- Quick cosmetic changes instead of real testing
-- Non-Shopify platforms
+- Non-Shopify platforms (WordPress, WIX, Squarespace, etc.)
 - Generic VA work`;
   }
 
@@ -55,6 +61,9 @@ NOT a fit:
 - Budget: $50+/hr or $500+ fixed price
 
 **TIER 2 - Upsell Potential (Accept)**
+- Shopify development work (theme customization, app integration, functionality builds)
+- Shopify migrations (from other platforms to Shopify, or Shopify redesigns/rebuilds)
+- Shopify design projects (theme design, UI/UX improvements, store redesigns)
 - Quick fixes on Shopify stores (can lead to larger projects)
 - Klaviyo email marketing (adjacent to CRO work)
 - Smaller CRO projects ($30-50/hr or $200-500 fixed)
