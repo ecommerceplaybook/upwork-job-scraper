@@ -100,7 +100,9 @@ The scheduler will:
 | `UPWORK_ACCESS_TOKEN` | Access token (auto-populated) | - |
 | `UPWORK_REFRESH_TOKEN` | Refresh token (auto-populated) | - |
 | `CRON_SCHEDULE` | Cron expression for scheduling | `0 */6 * * *` |
-| `SEARCH_KEYWORD` | Keyword to search for jobs | `Shopify` |
+| `SEARCH_KEYWORDS` | Comma-separated keywords to search | `Shopify` |
+| `FILTER_COUNTRIES` | Comma-separated country filters | `United States,USA,Canada,CAN` |
+| `SLACK_WEBHOOK_URL` | Slack webhook URL for notifications | (optional) |
 
 ### Cron Schedule Examples
 
@@ -115,6 +117,46 @@ The scheduler will:
 | `0 9 * * 1-5` | Weekdays at 9:00 AM |
 
 Learn more about cron expressions: [crontab.guru](https://crontab.guru/)
+
+### Slack Notifications Setup (Optional)
+
+Get real-time notifications in Slack whenever new Upwork jobs are found.
+
+#### Step 1: Create a Slack Incoming Webhook
+
+1. Go to your Slack workspace
+2. Visit [https://api.slack.com/apps](https://api.slack.com/apps)
+3. Click "Create New App" → "From scratch"
+4. Name your app (e.g., "Upwork Job Notifier") and select your workspace
+5. Click "Create App"
+6. In the left sidebar, click "Incoming Webhooks"
+7. Toggle "Activate Incoming Webhooks" to **On**
+8. Click "Add New Webhook to Workspace"
+9. Select the channel where you want notifications (e.g., `#upwork`)
+10. Click "Allow"
+11. Copy the webhook URL (looks like: `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXX`)
+
+#### Step 2: Add Webhook to Environment
+
+1. Open your `.env` file
+2. Add the webhook URL:
+   ```env
+   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WEBHOOK/URL
+   ```
+3. Save the file
+4. Restart your scheduler: `pm2 restart upwork-scraper` (on server) or `npm start` (locally)
+
+#### Features
+
+When Slack notifications are enabled, you'll receive:
+- 📊 Summary of new jobs found
+- 💼 Job title and posted date
+- 💰 Budget/rate information
+- 👤 Client details (hires, reviews, location)
+- 📄 Job description preview
+- 🔗 Direct link to apply on Upwork
+
+**Note:** Slack will only send notifications for **new jobs** that haven't been seen before, preventing duplicate notifications.
 
 ## Usage
 

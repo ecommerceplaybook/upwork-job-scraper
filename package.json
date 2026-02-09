@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node scheduler.js",
     "auth": "node auth.js",
-    "test": "node upwork-client.js"
+    "test": "node upwork-client.js",
+    "test-slack": "node test-slack.js"
   },
   "keywords": ["upwork", "api", "jobs", "scraper", "shopify"],
   "author": "",

@@ -1,10 +1,15 @@
 require('dotenv').config();
 const cron = require('node-cron');
 const UpworkClient = require('./upwork-client');
+const SlackNotifier = require('./slack-notifier');
 
 // Get configuration from environment
 const CRON_SCHEDULE = process.env.CRON_SCHEDULE || '0 */6 * * *'; // Default: every 6 hours
 const SEARCH_KEYWORD = process.env.SEARCH_KEYWORD || 'Shopify';
+const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL || '';
+
+// Initialize Slack notifier
+const slackNotifier = new SlackNotifier(SLACK_WEBHOOK_URL);
 
 /**
  * Validate cron schedule format
@@ -43,7 +48,22 @@ async function executeJobSearch() {
   
   try {
     const client = new UpworkClient();
-    await client.run(SEARCH_KEYWORD);
+    const results = await client.run(SEARCH_KEYWORD);
+    
+    // Send Slack notification for new jobs
+    if (results.processed && results.processed.newJobs > 0 && results.edges.length > 0) {
+      // Extract job nodes and add URL to each job
+      const jobsForSlack = results.edges.map(edge => {
+        const job = edge.node;
+        // Add properly formatted URL
+        const jobUrl = job.ciphertext 
+          ? `https://www.upwork.com/jobs/${job.ciphertext}`
+          : `https://www.upwork.com/jobs/~${job.id}`;
+        return { ...job, url: jobUrl };
+      });
+      
+      await slackNotifier.notifyNewJobs(jobsForSlack);
+    }
     
     console.log(`✅ Job search completed successfully at ${new Date().toLocaleString()}`);
     console.log(`⏰ Next run: ${getNextRunMessage(CRON_SCHEDULE)}`);
@@ -95,6 +115,7 @@ async function startScheduler() {
   console.log(`   Search Keyword: "${SEARCH_KEYWORD}"`);
   console.log(`   Schedule: ${getNextRunMessage(CRON_SCHEDULE)}`);
   console.log(`   Cron Expression: ${CRON_SCHEDULE}`);
+  console.log(`   Slack Notifications: ${SLACK_WEBHOOK_URL ? '✅ Enabled' : '❌ Disabled'}`);
   console.log('');
   
   // Run immediately on start
