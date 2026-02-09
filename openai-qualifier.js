@@ -37,8 +37,8 @@ Target clients:
 Core services offered:
 - Shopify CRO and conversion optimization
 - Shopify development (themes, apps, customizations)
-- Shopify migrations (platform migrations, redesigns)
-- Shopify design (UI/UX, theme design, store design)
+- Platform migrations TO Shopify (from WordPress, BigCommerce, Wix, Framer, etc.)
+- Shopify theme customization and design (UI/UX, theme design, store design)
 
 NOT a fit:
 - Brand-new stores without revenue
@@ -62,8 +62,9 @@ NOT a fit:
 
 **TIER 2 - Upsell Potential (Accept)**
 - Shopify development work (theme customization, app integration, functionality builds)
-- Shopify migrations (from other platforms to Shopify, or Shopify redesigns/rebuilds)
-- Shopify design projects (theme design, UI/UX improvements, store redesigns)
+- Platform migrations TO Shopify (WordPress → Shopify, BigCommerce → Shopify, Wix → Shopify, Framer → Shopify, etc.)
+- Shopify redesigns and rebuilds (staying on Shopify)
+- Shopify theme customization and design (theme design, UI/UX improvements, store redesigns)
 - Quick fixes on Shopify stores (can lead to larger projects)
 - Klaviyo email marketing (adjacent to CRO work)
 - Smaller CRO projects ($30-50/hr or $200-500 fixed)
@@ -73,7 +74,8 @@ NOT a fit:
 
 **TIER 3 - Hard Reject (Filter Out)**
 - Extremely low budgets with no growth potential ($5-20 fixed price, especially with minimal scope)
-- Wrong niche: Non-ecommerce, non-Shopify platforms, WordPress, Wix, Squarespace, etc.
+- Wrong platform work: WordPress sites, Wix sites, Squarespace sites (NOT migrating to Shopify)
+- Migrations FROM Shopify to other platforms (Shopify → Framer, Shopify → WordPress, etc.)
 - Explicitly excluded: Dropshipping without traction, brand new stores with no revenue, generic VA work
 - Spam, unclear, or completely irrelevant job descriptions
 - Very high hire counts (200+) combined with extremely low budgets (suggests client churns through cheap freelancers)
