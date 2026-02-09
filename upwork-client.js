@@ -205,10 +205,6 @@ class UpworkClient {
                 totalHires
                 totalPostedJobs
                 totalReviews
-                totalCharges {
-                  rawValue
-                }
-                paymentVerificationStatus
                 location {
                   country
                 }

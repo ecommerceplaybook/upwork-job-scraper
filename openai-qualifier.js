@@ -63,11 +63,11 @@ NOT a fit:
 - Any Shopify work that could develop into ongoing relationship
 
 **TIER 3 - Hard Reject (Filter Out)**
-- Low-value clients: High hire count with very low total spend (e.g., 300+ hires but only $3k-5k total spent = ~$10-15 per hire average)
-- Extremely low budgets with no growth potential ($5-20 fixed price)
-- Wrong niche: Non-ecommerce, non-Shopify platforms, WordPress, Wix, etc.
+- Extremely low budgets with no growth potential ($5-20 fixed price, especially with minimal scope)
+- Wrong niche: Non-ecommerce, non-Shopify platforms, WordPress, Wix, Squarespace, etc.
 - Explicitly excluded: Dropshipping without traction, brand new stores with no revenue, generic VA work
 - Spam, unclear, or completely irrelevant job descriptions
+- Very high hire counts (200+) combined with extremely low budgets (suggests client churns through cheap freelancers)
 
 **IMPORTANT:** Be generous with Tier 2. Even small Shopify jobs can lead to bigger opportunities. Focus on filtering out only the truly bad fits (Tier 3).
 
@@ -87,12 +87,6 @@ or
    * Create the user prompt with job details
    */
   getUserPrompt(job) {
-    // Calculate spend per hire if data is available
-    let spendPerHire = 'Unknown';
-    if (job.client?.totalCharges?.rawValue && job.client?.totalHires && job.client.totalHires > 0) {
-      spendPerHire = `$${Math.round(job.client.totalCharges.rawValue / job.client.totalHires)}`;
-    }
-    
     // Format budget
     let budget = 'Not specified';
     if (job.hourlyBudgetMin?.rawValue && job.hourlyBudgetMax?.rawValue) {
@@ -103,14 +97,11 @@ or
       budget = `$${job.weeklyBudget.rawValue}/week`;
     }
     
-    // Build client info
+    // Build client info (note: Upwork API doesn't provide total spent data)
     const clientInfo = job.client ? `
 Client Info:
 - Total Hires: ${job.client.totalHires || 0}
 - Total Jobs Posted: ${job.client.totalPostedJobs || 0}
-- Total Spent: ${job.client.totalCharges?.rawValue ? `$${job.client.totalCharges.rawValue}` : 'Unknown'}
-- Spend per Hire: ${spendPerHire}
-- Payment Verified: ${job.client.paymentVerificationStatus || 'Unknown'}
 - Location: ${job.client.location?.country || 'Unknown'}
 - Reviews: ${job.client.totalReviews || 0}` : 'No client info available';
 
